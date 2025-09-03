@@ -1,0 +1,79 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+
+import HTMLWrapper from "../../layouts/MainWrapper.astro";
+import { getCollection } from "astro:content";
+import LogEntry from "../../components/LogEntry";
+import { Button } from "../../components/Button";
+import { ProjectCard } from "../../components/ProjectCard";
+
+import { format } from "date-fns";
+import { zhCN } from "date-fns/locale";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+
+const docs = await getCollection("docs", ({ data }) => {
+  return data.father === project.data.id;
+});
+
+// const { id } = Astro.locals.starlightRoute;
+---
+
+<HTMLWrapper>
+  <StarlightPage
+    frontmatter={{
+      title: "Projects",
+      template: "splash",
+      hero: {},
+    }}
+  >
+    <!-- 页面id：{id} -->
+    <div class="max-w-5xl mx-auto py-8 not-content">
+      <Button label="👈 返回列表" href="/" rel="noopener noreferrer" />
+
+      <div class="mt-8">
+        <ProjectCard {...project.data} isLink={false} client:load />
+      </div>
+
+      <div class="mt-8">
+        <h2 class="text-3xl font-bold dark:text-white mb-8 flex items-center">
+          <span
+            class="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 mr-3 rounded-full"
+          ></span>
+          开发日志
+        </h2>
+
+        <div class="grid space-y-4 gap-4">
+          {
+            docs.length > 0 ? (
+              docs.map((doc) => (
+                <LogEntry data={doc.data} id={doc.id} client:load />
+              ))
+            ) : (
+              <pre class="text-gray-400">
+                <p>
+                  未在 docs 集合中找到与 "{project.data.title}" 对应的文档。
+                </p>
+                <details class="mt-4">
+                  <summary class="cursor-pointer">调试信息</summary>
+                  <pre class="mt-2 p-2 bg-gray-100 rounded text-xs">
+                    项目 ID: {project.id}
+                    项目标题: {project.data.id}
+                  </pre>
+                </details>
+              </pre>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </StarlightPage>
+</HTMLWrapper>

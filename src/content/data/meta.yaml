@@ -1,0 +1,18 @@
+- date: "2025-02-13"
+  description: "A Template Game"
+  id: "template-game"
+  progress: 0.4
+  status: "progressing"
+  tags: ["Template", "Godot", "c#"]
+  title: "TemplateGame"
+  type: "game"
+
+- date: "2024-04-11"
+  description: "A Template Web"
+  id: "template-web"
+  progress: 1
+  status: "complete"
+  tags: ["Web", "React", "vite"]
+  title: "TemplateWeb"
+  type: "web"
+

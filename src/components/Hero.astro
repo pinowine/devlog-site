@@ -1,0 +1,15 @@
+---
+import Default from "@astrojs/starlight/components/Hero.astro";
+
+const isProjectsPage = Astro.locals.starlightRoute.id.includes("projects");
+---
+
+{
+  isProjectsPage ? (
+    <></>
+  ) : (
+    <Default>
+      <slot />
+    </Default>
+  )
+}

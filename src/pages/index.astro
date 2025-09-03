@@ -1,0 +1,35 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+import MainWrapper from "../layouts/MainWrapper.astro";
+import { getCollection } from "astro:content";
+const projects = await getCollection("projects");
+
+import { ProjectCard } from "../components/ProjectCard";
+---
+
+<MainWrapper>
+  <StarlightPage
+    frontmatter={{
+      title: "主页",
+      template: "splash",
+      hero: {
+        title: "Drug Factory <br/> 解析式药丸生产仓库",
+        tagline: "我的编程项目的 <i>开发/维护/翻修</i> 日志归档站。",
+      },
+    }}
+  >
+    <div class="max-w-7xl mx-auto py-12 mt-10">
+      <CardGrid stagger>
+        {
+          projects.map((proj, index) => (
+            <div class="fade-up" style={`animation-delay:${index * 100}ms`}>
+              <ProjectCard {...proj.data} client:load />
+            </div>
+          ))
+        }
+      </CardGrid>
+    </div>
+  </StarlightPage>
+</MainWrapper>

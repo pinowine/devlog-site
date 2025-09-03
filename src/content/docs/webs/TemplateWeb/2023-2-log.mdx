@@ -1,0 +1,87 @@
+---
+title: "TemplateWeb: Vite + React + Tailwind Setup"
+father: "template-web"
+description: "Scaffold project, add Tailwind Typography, and wire up Netlify."
+lastUpdated: 2024-04-11
+tags:
+  - web
+  - react
+  - vite
+  - tailwind
+readTime: "6 min"
+giscus: true
+---
+
+本周我们完成了游戏战斗系统的第一个可玩原型。现在玩家可以体验到激烈的太空战斗了！
+
+## ⚔️ 战斗系统概览
+
+### 武器系统
+
+实现了三种基础武器类型：
+
+1. **激光炮** - 高精度，即时命中
+2. **等离子炮** - 中等伤害，有弹道
+3. **导弹** - 高伤害，可追踪
+
+```godot:lib/mdx.ts showLineNumbers
++ public interface IWeapon 
++ {
++     void Fire(Vector3 direction);
++     void Reload();
++     bool CanFire();
++ }
+- public interface IWeapon 
+- {
+-     void Fire(Vector3 direction);
+-     void Reload();
+-     bool CanFire();
+- }
+```
+
+### 护盾与装甲
+
+- 能量护盾可再生
+- 装甲提供永久防护
+- 不同伤害类型有不同效果
+
+::: code-group labels=[npm, pnpm, yarn]
+
+```bash
+npm install rehype-code-group
+```
+
+```bash
+pnpm add rehype-code-group
+```
+
+```bash
+yarn add rehype-code-group
+```
+
+:::
+
+![战斗演示](/assets/logs/combat-demo.gif)
+
+## 🤖 AI 系统
+
+使用行为树实现敌人 AI：
+
+```yaml showLineNumbers {2-4,8}
+BehaviorTree:
+  - Selector:
+    - Sequence: [检测玩家, 追击, 开火]
+    - Sequence: [巡逻, 扫描]
+    - 返回基地
+BehaviorTree:
+  - Selector:
+    - Sequence: [检测玩家, 追击, 开火]
+    - Sequence: [巡逻, 扫描]
+    - 返回基地
+```
+
+## 📈 下周计划
+
+- 添加更多武器类型
+- 实现技能系统
+- 优化战斗特效

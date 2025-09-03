@@ -1,0 +1,31 @@
+---
+import "../styles/custom.global.css";
+---
+
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Drug Factory</title>
+  </head>
+  <body class="">
+    <slot />
+  </body>
+</html>
+<script>
+  (() => {
+    try {
+      const theme = localStorage.getItem("theme"); // 'dark' | 'light' | null(=auto)
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      if (theme === "dark" || (!theme && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    } catch (_) {}
+  })();
+</script>

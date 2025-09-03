@@ -5,13 +5,18 @@
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 @theme {
-	/*
-	Configure your Tailwind theme that will be used by Starlight.
-	https://starlight.astro.build/guides/css-and-tailwind/#styling-starlight-with-tailwind
-	*/
+  /* Generated accent color palettes. */
+  --color-accent-200: #e7b3f3;
+  --color-accent-600: #a600c4;
+  --color-accent-900: #510061;
+  --color-accent-950: #380b42;
+  /* Generated gray color palettes. */
+  --color-gray-100: #f6f6f7;
+  --color-gray-200: #eeedef;
+  --color-gray-300: #c2c1c4;
+  --color-gray-400: #8c8a8f;
+  --color-gray-500: #59575c;
+  --color-gray-700: #39373c;
+  --color-gray-800: #28262a;
+  --color-gray-900: #19181a;
 }
-
-/*
-Add additional Tailwind styles to this file:
-https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
-*/

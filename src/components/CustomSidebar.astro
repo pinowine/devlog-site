@@ -1,0 +1,63 @@
+---
+import Default from "@astrojs/starlight/components/Sidebar.astro";
+
+// ===== Types (最小可用声明，避免隐式 any) =====
+type SidebarEntry = {
+  type?: "link" | "group" | string;
+  label?: string;
+  entries?: SidebarEntry[];
+};
+
+type SidebarGroup = {
+  label?: string;
+  entries?: SidebarEntry[];
+};
+
+type Props = {
+  sidebar?: SidebarGroup[];
+  // 其它传给默认 Sidebar 的属性（例如 currentPage 等）
+  [key: string]: unknown;
+};
+
+// 从 props 里拿到 sidebar，给出默认值，杜绝 undefined.map
+const { sidebar: rawSidebar = [] } = Astro.props as Props;
+
+// 纯函数：处理条目，去掉前缀
+function processEntries(
+  entries: SidebarEntry[],
+  prefixToRemove: string
+): SidebarEntry[] {
+  return entries.map((entry) => {
+    const next: SidebarEntry = { ...entry };
+
+    if (next.type === "group" && Array.isArray(next.entries)) {
+      next.entries = processEntries(next.entries, prefixToRemove);
+    }
+
+    if (
+      typeof next.label === "string" &&
+      next.label.startsWith(prefixToRemove)
+    ) {
+      next.label = next.label.slice(prefixToRemove.length);
+    }
+
+    return next;
+  });
+}
+
+// 纯函数：处理顶层分组，按分组名决定要去掉的前缀
+const processedSidebar: SidebarGroup[] = Array.isArray(rawSidebar)
+  ? rawSidebar.map((group) => {
+      const g: SidebarGroup = { ...group };
+      if (g.label === "Games" && Array.isArray(g.entries)) {
+        g.entries = processEntries(g.entries, "games/");
+      }
+      if (g.label === "Webs" && Array.isArray(g.entries)) {
+        g.entries = processEntries(g.entries, "webs/");
+      }
+      return g;
+    })
+  : [];
+---
+
+<Default {...Astro.props} sidebar={processedSidebar} />
