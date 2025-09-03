@@ -1,0 +1,104 @@
+---
+title: "Unity Roguelite 原型 #1"
+description: ScriptableObject 驱动的道具与敌人生成，含 URP Shader 与 Addressables。
+tags: [Unity, CSharp, URP, Addressables, ShaderLab]
+father: "template-game-2"
+lastUpdated: 2024-02-13
+readTime: "5 min"
+giscus: true
+---
+
+![Roguelite 场景占位图](https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3)
+_图 1：走廊与房间预制体_
+
+:::note
+本文同样为**样式覆盖测试**。
+:::
+
+## 设计概览
+
+- 以 **ScriptableObject** 定义道具与敌人参数；
+- 使用 **Addressables** 动态加载房间与怪物；
+- 基于 **URP** 自定义光照与描边。
+
+### 数据结构（代码组）
+
+:::code-group
+
+```csharp [ItemDef.cs] title="ItemDef.cs" showLineNumbers {6,12}
+using UnityEngine;
+
+[CreateAssetMenu(menuName="Defs/Item")]
+public class ItemDef : ScriptableObject
+{
+  public string Id;
+  public string DisplayName;
+  public Sprite Icon;           // [!code highlight]
+  [TextArea] public string Desc;// [!code highlight]
+  public int Rarity;
+}
+```
+
+```csharp [Spawner.cs] title="Spawner.cs" showLineNumbers {10-14}
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+
+public class Spawner : MonoBehaviour
+{
+  public AssetReferenceGameObject EnemyRef;
+
+  async void Start()
+  {
+    var handle = EnemyRef.InstantiateAsync(transform.position, Quaternion.identity);
+    await handle.Task; // [!code highlight]
+  }
+}
+```
+
+:::
+
+### Shader 片段（URP/ShaderLab）
+
+```hlsl title="SimpleOutline.hlsl" showLineNumbers {4,15}
+float4 OutlineFrag (v2f i) : SV_Target
+{
+  float3 col = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv).rgb;
+  float edge = 1.0 - step(0.2, length(i.normalWS)); // [!code warning]
+  return float4(lerp(col, float3(0,0,0), edge * _OutlineStrength), 1);
+}
+```
+
+> 引用：Addressables 避免场景冗大构建；ScriptableObject 让**配置**与**逻辑**解耦。
+
+### 重构（Diff）
+
+```diff title="Spawner.cs"
+- await handle.Task;
++ try {
++   await handle.Task;           // [!code highlight]
++ } catch (System.Exception ex) {
++   Debug.LogError($"Spawn failed: {ex.Message}"); // [!code error]
++ }
+```
+
+:::warning[常见问题]
+- Addressables **Group** 未标记可远程加载；
+- URP 渲染队列/深度写入设置不当导致**描边穿透**；
+:::
+
+### 终端（CI 构建占位）
+
+```bash title="CI: Unity batchmode Windows 构建"
+Unity.exe -batchmode -quit -projectPath . -buildTarget Win64 -executeMethod Build.Perform
+```
+
+<details>
+  <summary>展开：掉落表与权重</summary>
+  使用加权随机（alias method）~O(1) 采样，将稀有度映射到概率区间。
+</details>
+
+| 系统 | 进度 | 备注 |
+| --- | --- | --- |
+| 房间生成 | ✅ | 规则+模板 |
+| 敌人池 | 🚧 | 待补远程表 |
+| 装备 | ⏸️ | 等待美术 |

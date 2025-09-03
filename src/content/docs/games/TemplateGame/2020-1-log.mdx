@@ -1,7 +1,7 @@
 ---
-title: "Kickoff: Core Loop Notes"
+title: "Godot 平台跳跃原型 #1"
+description: 使用 Godot 4 开发 Celeste-like 原型：输入、跳跃缓冲、Coyote Time、移动摄像机。
 father: "template-game"
-description: "Initial design notes for the movement/core loop prototype."
 lastUpdated: 2025-02-13
 tags:
   - design
@@ -11,199 +11,155 @@ readTime: "4 min"
 giscus: true
 ---
 
-经过两周的努力，我们终于完成了游戏的核心系统之一：**程序化星系生成**。这个系统让每个玩家都能体验到独一无二的宇宙探索之旅。
+import { Aside } from '@astrojs/starlight/components';
 
-## 🎯 设计目标
+> 本文档用于**样式演练**：含锚点、旁白、折叠、表格、任务清单、代码组、diff 与行高亮等。
+>
+> 跳转到 [性能分析](#性能分析) 小节。
 
-在开始编码之前，我们制定了以下设计目标：
+![像素风平台跳跃示意](https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3)
+_图 1：原型场景示意_
 
-1. **多样性** - 每个星系都应该是独特的
-2. **可控性** - 通过参数调整星系的特征
-3. **性能** - 即使生成上千个星体也要保持流畅
-4. **美观性** - 生成的星系要符合天文学美感
+<span style={{fontWeight:700,color:'var(--color-accent-600)'}}>内联样式示例：</span>此处用自定义色强调关键术语，比如 <kbd>Coyote Time</kbd> 与 _Jump Buffer_。
 
-## 🛠 技术实现
+:::note[目标]
+实现最小可玩：**左右移动 + 跳跃 + 缓冲 + 斜坡摩擦**，并输出基础性能指标（FPS/帧时）。
+:::
 
-### 核心算法
+:::tip[输入映射]
+在 **Project Settings → Input Map** 增加 `move_left`、`move_right`、`jump`。下面给出 GDScript/C# 双实现。
+:::
 
-我们使用了改进的 **Perlin Noise** 算法配合 **螺旋星系数学模型**：
+## 控制器脚本
 
-```csharp
-public class GalaxyGenerator : MonoBehaviour 
+:::code-group
+
+```gdscript [player.gd] title="player.gd" showLineNumbers {5,16-20}
+extends CharacterBody2D
+
+@export var speed := 220.0
+@export var jump_velocity := -420.0
+@export var coyote_time := 0.08 # [!code highlight]
+@export var jump_buffer := 0.12 # [!code highlight]
+
+var _coyote := 0.0
+var _buffer := 0.0
+
+func _physics_process(dt: float) -> void:
+  var dir := Input.get_axis("move_left", "move_right")
+  velocity.x = move_toward(velocity.x, dir * speed, 1600.0 * dt)
+
+  if is_on_floor():
+    _coyote = coyote_time # [!code highlight]
+  else:
+    _coyote = max(_coyote - dt, 0.0)
+
+  if Input.is_action_just_pressed("jump"):
+    _buffer = jump_buffer # [!code highlight]
+  else:
+    _buffer = max(_buffer - dt, 0.0)
+
+  if (_coyote > 0.0) and (_buffer > 0.0):
+    velocity.y = jump_velocity
+    _buffer = 0.0
+
+  velocity.y += 1200.0 * dt # 重力
+  move_and_slide()
+```
+
+```csharp [Player.cs] title="Player.cs" showLineNumbers {9,21-25}
+using Godot;
+public partial class Player : CharacterBody2D
 {
-    [SerializeField] private int starCount = 1000;
-    [SerializeField] private float galaxyRadius = 500f;
-    [SerializeField] private AnimationCurve densityCurve;
-    
-    public Galaxy GenerateGalaxy(int seed) 
+  [Export] public float Speed = 220f;
+  [Export] public float JumpVelocity = -420f;
+  [Export] public float CoyoteTime = 0.08f; // [!code highlight]
+  [Export] public float JumpBuffer = 0.12f; // [!code highlight]
+
+  private float coyote, buffer;
+
+  public override void _PhysicsProcess(double dt)
+  {
+    var x = Input.GetAxis("move_left", "move_right");
+    Velocity = new Vector2(Mathf.MoveToward(Velocity.X, (float)(x * Speed), (float)(1600 * dt)), Velocity.Y);
+
+    coyote = IsOnFloor() ? CoyoteTime : Mathf.Max(coyote - (float)dt, 0f);
+
+    if (Input.IsActionJustPressed("jump")) buffer = JumpBuffer;
+    else buffer = Mathf.Max(buffer - (float)dt, 0f);
+
+    if (coyote > 0 && buffer > 0)
     {
-        Random.InitState(seed);
-        Galaxy galaxy = new Galaxy();
-        
-        for (int i = 0; i < starCount; i++) 
-        {
-            // 使用对数螺旋方程生成基础形状
-            float angle = Random.Range(0, Mathf.PI * 2);
-            float distance = SampleDistance();
-            
-            // 添加 Perlin Noise 扰动
-            Vector3 noise = GetPerlinNoise3D(angle, distance);
-            
-            // 计算最终位置
-            Vector3 position = new Vector3(
-                Mathf.Cos(angle) * distance + noise.x,
-                noise.y * 0.1f, // 扁平化
-                Mathf.Sin(angle) * distance + noise.z
-            );
-            
-            Star star = new Star {
-                Position = position,
-                Type = DetermineStarType(distance),
-                Luminosity = CalculateLuminosity(position)
-            };
-            
-            galaxy.Stars.Add(star);
-        }
-        
-        return galaxy;
+      Velocity = new Vector2(Velocity.X, JumpVelocity);
+      buffer = 0f;
     }
-    
-    private StarType DetermineStarType(float distance) 
-    {
-        // 根据距离中心的位置决定恒星类型
-        float probability = Random.value;
-        
-        if (distance < galaxyRadius * 0.3f) 
-        {
-            // 核心区域：更多老年恒星
-            return probability < 0.7f ? StarType.RedGiant : StarType.WhiteDwarf;
-        }
-        else 
-        {
-            // 外围区域：年轻恒星
-            return probability < 0.6f ? StarType.MainSequence : StarType.BlueGiant;
-        }
-    }
+
+    Velocity += new Vector2(0, (float)(1200 * dt));
+    MoveAndSlide();
+  }
 }
 ```
 
-### 性能优化
+### 代码重构（Diff）
 
-为了处理大量星体，我们实现了以下优化：
-
-1. **GPU Instancing** - 使用 Unity 的 Graphics.DrawMeshInstanced
-2. **LOD 系统** - 远处的星体使用简化模型
-3. **空间分区** - 使用八叉树进行空间划分
-4. **异步生成** - 使用协程分批生成星体
-
-## 🎨 视觉效果
-
-### 星系全景
-
-![星系全景图](/assets/logs/galaxy-overview.jpg)
-*生成的螺旋星系全景，包含约 5000 颗恒星*
-
-### 星云效果
-
-![星云特效](/assets/logs/nebula-effect.jpg)
-*使用粒子系统和后处理实现的星云效果*
-
-### 不同类型的恒星
-
-![恒星类型](/assets/logs/star-types.jpg)
-*从左到右：红巨星、主序星、蓝巨星、白矮星*
-
-## 📊 性能测试结果
-
-| 星体数量 | FPS (GTX 1060) | FPS (RTX 3070) | 内存占用 |
-|---------|---------------|---------------|---------|
-| 1,000   | 120           | 144          | 245 MB  |
-| 5,000   | 85            | 144          | 380 MB  |
-| 10,000  | 45            | 95           | 620 MB  |
-| 20,000  | 25            | 60           | 1.2 GB  |
-
-*实时生成不同参数的星系演示*
-
-## 🐛 遇到的挑战
-
-### 1. 分布均匀性问题
-
-最初的算法生成的星体分布过于均匀，缺乏真实感。通过引入多层 Perlin Noise 和密度曲线，我们成功创造出了更自然的聚集效果。
-
-### 2. 性能瓶颈
-
-当星体数量超过 10,000 时，帧率下降严重。解决方案：
-
-- 实现了基于视锥体的剔除
-- 使用 Object Pooling 减少 GC
-- 将计算密集型任务移至 Job System
-
-### 3. 种子一致性
-
-确保同一种子在不同设备上生成相同的星系。Unity 的 Random 类在不同平台上可能有细微差异，我们改用了自定义的 PCG 算法。
-
-## 📝 代码片段：恒星渲染
-
-```csharp
-// 使用 GPU Instancing 批量渲染恒星
-public class StarRenderer : MonoBehaviour 
-{
-    private Matrix4x4[] matrices;
-    private MaterialPropertyBlock propertyBlock;
-    
-    void Update() 
-    {
-        // 准备实例化数据
-        for (int i = 0; i < visibleStars.Count; i++) 
-        {
-            matrices[i] = Matrix4x4.TRS(
-                visibleStars[i].Position,
-                Quaternion.identity,
-                Vector3.one * visibleStars[i].Scale
-            );
-        }
-        
-        // 批量渲染
-        Graphics.DrawMeshInstanced(
-            starMesh,
-            0,
-            starMaterial,
-            matrices,
-            visibleStars.Count,
-            propertyBlock
-        );
-    }
-}
+```diff title="将移动与跳跃解耦（player.gd）"
+- velocity.x = move_toward(velocity.x, dir * speed, 1600.0 * dt)
++ velocity.x = approach(velocity.x, dir * speed, 1600.0 * dt)
++ 
++ func approach(current: float, target: float, delta: float) -> float:
++   if current < target:
++     return min(current + delta, target)
++   return max(current - delta, target)
 ```
 
-## 🔮 下一步计划
+### 旁白示例
 
-1. **星系类型多样化**
-   - 椭圆星系
-   - 不规则星系
-   - 棒旋星系
+<Aside>一些在旁白中的内容。</Aside>
 
-2. **动态元素**
-   - 行星轨道运动
-   - 恒星生命周期模拟
-   - 超新星爆发事件
+<Aside type="caution">一些警示内容。</Aside>
 
-3. **玩家交互**
-   - 星系地图编辑器
-   - 自定义星系参数
-   - 保存/分享星系种子
+<Aside type="tip">
 
-## 💭 开发感想
+旁白中还支持其他内容。
 
-这个系统的开发让我深入理解了程序化生成的魅力。看着代码生成的星系，每一个都独一无二却又符合天文学规律，这种感觉真的很奇妙。
+```js
+// 例如，代码片段。
+```
 
-特别感谢 **@李四** 提供的美术支持，那些星云着色器真的太棒了！
+</Aside>
 
----
+<Aside type="danger">不要将你的密码告诉任何人。</Aside>
 
-**相关链接：**
+## 性能分析
 
-- [GitHub: 星系生成模块](https://github.com/...)
-- [论文参考: Procedural Generation of Galaxies](https://...)
-- [Unity Asset Store: Space Graphics Pack](https://...)
+| 指标 | 数值（Editor） | 说明 |
+| --- | :--: | --- |
+| 帧时 | 0.9–1.7 ms | 空场景 + 角色控制 |
+| Draw Calls | 100–250 | 包含瓦片地图与 UI |
+| 内存 | ~120 MB | 含导入贴图缓存 |
 
+- [x] 基本角色控制  
+- [x] 缓冲/Coyote Time  
+- [ ] 粒子/屏幕冲击波  
+- [ ] Boss 原型
+
+<details>
+  <summary>展开：摄像机抖动与跟随</summary>
+  先用 <code>Camera2D</code> 的 <code>limit</code> 与 <code>offset</code>；后续将引入噪声曲线制造受击抖动。
+</details>
+
+### 终端与导出
+
+```bash title="命令行运行 Godot（headless）"
+godot --headless --path ./project --quit-after 2
+```
+
+```bash title="导出模板（Windows）"
+godot --export-release "Windows Desktop" build/game.exe
+# [!code warning] 如缺少导出模板请先在 Editor 中下载
+```
+
+:::important[版本/素材]
+- **Godot 4.3**，GLES3  
+- 角色占位图来自开源占位素材包（仅用于原型）
+:::

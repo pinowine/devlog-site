@@ -17,8 +17,15 @@ export default defineConfig({
 		starlight({
 			title: 'Drug Factory',
 			description: '布的游戏与前端开发日志',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/pinowine' }],
 			customCss: ['./src/styles/global.css'],
+			defaultLocale: 'root',
+			locales: {
+				root: {
+					label: '简体中文',
+					lang: 'zh-CN',
+				},
+			},
 			plugins: [
 				starlightUtils({
 					multiSidebar: {
@@ -49,6 +56,7 @@ export default defineConfig({
 				Header: './src/components/Header.astro',
 				PageFrame: './src/components/PageFrame.astro',
 				SiteTitle: './src/components/SiteTitle.astro',
+				PageSidebar: './src/components/PageSidebar.astro'
 			}
 		}),
 		react(),

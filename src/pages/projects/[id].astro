@@ -7,9 +7,6 @@ import LogEntry from "../../components/LogEntry";
 import { Button } from "../../components/Button";
 import { ProjectCard } from "../../components/ProjectCard";
 
-import { format } from "date-fns";
-import { zhCN } from "date-fns/locale";
-
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
   return projects.map((project) => ({

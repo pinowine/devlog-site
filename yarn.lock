@@ -1657,20 +1657,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tailwindcss/typography@npm:^0.5.16":
-  version: 0.5.16
-  resolution: "@tailwindcss/typography@npm:0.5.16"
-  dependencies:
-    lodash.castarray: "npm:^4.4.0"
-    lodash.isplainobject: "npm:^4.0.6"
-    lodash.merge: "npm:^4.6.2"
-    postcss-selector-parser: "npm:6.0.10"
-  peerDependencies:
-    tailwindcss: "*"
-  checksum: 10c0/35a7387876810c23c270a23848b920517229b707c8ead6a63c8bb7d6720a62f23728c3117f0a93b422a66d1e5ee9c7ad8a6c3f0fbf5255b535c0e4971ffa0158
-  languageName: node
-  linkType: hard
-
 "@tailwindcss/vite@npm:^4.0.7":
   version: 4.1.12
   resolution: "@tailwindcss/vite@npm:4.1.12"
@@ -1829,15 +1815,6 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10c0/02cce4493eee8408e66e76fcad164f33c0600ed0854ad08e5519a76a06402da5b589b278cf71bc975c9e014f2668bdf758bc3be7fed63bdbfd0900495372797c
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:^19.1.8":
-  version: 19.1.8
-  resolution: "@types/react-dom@npm:19.1.8"
-  peerDependencies:
-    "@types/react": ^19.0.0
-  checksum: 10c0/561f9679c99e93adba8ecdf7d5ad69cc9d5e35837fa996246a83713f0ce498fc5b871f9a2a3342c7d440fc02159abe10f29c4a4004527d5d38b2e84f21840793
   languageName: node
   linkType: hard
 
@@ -2573,11 +2550,9 @@ __metadata:
     "@astrojs/starlight": "npm:^0.35.2"
     "@astrojs/starlight-tailwind": "npm:^4.0.1"
     "@lorenzo_lewis/starlight-utils": "npm:^0.3.2"
-    "@tailwindcss/typography": "npm:^0.5.16"
     "@tailwindcss/vite": "npm:^4.0.7"
     "@types/node": "npm:^22"
     "@types/react": "npm:^19.1.11"
-    "@types/react-dom": "npm:^19.1.8"
     acorn: "npm:^8"
     astro: "npm:5.6.1"
     astro-vtbot: "npm:^2.1.8"
@@ -2588,9 +2563,7 @@ __metadata:
     react-dom: "npm:^19.1.1"
     reading-time: "npm:^1.5.0"
     sharp: "npm:^0.34.2"
-    starlight-auto-sidebar: "npm:^0.1.2"
     starlight-giscus: "npm:^0.7.0"
-    starlight-sidebar-topics: "npm:^0.6.0"
     tailwindcss: "npm:^4.0.0"
     toml: "npm:^3.0.0"
     typescript: "npm:^5.9.2"
@@ -3771,27 +3744,6 @@ __metadata:
     lightningcss-win32-x64-msvc:
       optional: true
   checksum: 10c0/1e1ad908f3c68bf39d964a6735435a8dd5474fb2765076732d64a7b6aa2af1f084da65a9462443a9adfebf7dcfb02fb532fce1d78697f2a9de29c8f40f09aee3
-  languageName: node
-  linkType: hard
-
-"lodash.castarray@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "lodash.castarray@npm:4.4.0"
-  checksum: 10c0/0bf523ad1596a5bf17869ba047235b4453eee927005013ae152345e2b291b81a02e7f2b7c38f876a1d16f73c34aa3c3241e965193e5b31595035bc8f330c4358
-  languageName: node
-  linkType: hard
-
-"lodash.isplainobject@npm:^4.0.6":
-  version: 4.0.6
-  resolution: "lodash.isplainobject@npm:4.0.6"
-  checksum: 10c0/afd70b5c450d1e09f32a737bed06ff85b873ecd3d3d3400458725283e3f2e0bb6bf48e67dbe7a309eb371a822b16a26cca4a63c8c52db3fc7dc9d5f9dd324cbb
-  languageName: node
-  linkType: hard
-
-"lodash.merge@npm:^4.6.2":
-  version: 4.6.2
-  resolution: "lodash.merge@npm:4.6.2"
-  checksum: 10c0/402fa16a1edd7538de5b5903a90228aa48eb5533986ba7fa26606a49db2572bf414ff73a2c9f5d5fd36b31c46a5d5c7e1527749c07cbcf965ccff5fbdf32c506
   languageName: node
   linkType: hard
 
@@ -5003,16 +4955,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-selector-parser@npm:6.0.10":
-  version: 6.0.10
-  resolution: "postcss-selector-parser@npm:6.0.10"
-  dependencies:
-    cssesc: "npm:^3.0.0"
-    util-deprecate: "npm:^1.0.2"
-  checksum: 10c0/a0b27c5e3f7604c8dc7cd83f145fdd7b21448e0d86072da99e0d78e536ba27aa9db2d42024c50aa530408ee517c4bdc0260529e1afb56608f9a82e839c207e82
-  languageName: node
-  linkType: hard
-
 "postcss-selector-parser@npm:^6.1.1":
   version: 6.1.2
   resolution: "postcss-selector-parser@npm:6.1.2"
@@ -5829,34 +5771,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"starlight-auto-sidebar@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "starlight-auto-sidebar@npm:0.1.2"
-  dependencies:
-    github-slugger: "npm:^2.0.0"
-  peerDependencies:
-    "@astrojs/starlight": ">=0.32.0"
-  checksum: 10c0/4cfb94dadc83fab60535ca8cc171949b3bc9a0c813818b9d47af5cba6e69eed626877185d513a6ceb9526994795419bf62f7475018ab5d6f1e3b540316024bd2
-  languageName: node
-  linkType: hard
-
 "starlight-giscus@npm:^0.7.0":
   version: 0.7.0
   resolution: "starlight-giscus@npm:0.7.0"
   peerDependencies:
     "@astrojs/starlight": ">=0.35.0"
   checksum: 10c0/6832aed3d2779f8587517e86d6931b8d1712faf2b0aa77d0f32155cf410f0d3a6a3787a77f47e91433c36930bed7710b8123f62f0db3e7d70b8bd2911443c1ac
-  languageName: node
-  linkType: hard
-
-"starlight-sidebar-topics@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "starlight-sidebar-topics@npm:0.6.0"
-  dependencies:
-    picomatch: "npm:^4.0.2"
-  peerDependencies:
-    "@astrojs/starlight": ">=0.32.0"
-  checksum: 10c0/cdcbb03ba11d492581723552f1c7f47fe76b3336af80bbc9a6c4023d3a85750e9c508521a804a71cb05726fe153a3ee06e7dce6cb541d94b06bcb2d8c149d254
   languageName: node
   linkType: hard
 
