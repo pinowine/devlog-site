@@ -1,0 +1,91 @@
+---
+title: "玩家设计"
+description: 玩家操控、物理编程与程序化动画
+father: "psycho-hunger"
+lastUpdated: 2026-04-22
+tags:
+  - 程序化动画
+  - GDScript
+  - 物理编程
+---
+
+项目开始我着手于玩家设计，基本就是一个可以抓握、自动黏着的神经元。简单分成两个部分：控制（物理）层和视觉层。
+
+## 核心机制
+
+### 运动
+
+神经元的基础设置为可以**自动**黏着在任何可黏着表面并沿着表面任意移动。通常来讲有两种解决方案：
+
+- 接受双向输入（AD）不再表示左右而是表示顺着表面“正向”与“逆向”的移动；
+- 接受二维向量输入（WASD）直接控制方向。
+
+我认为后者更符合操作直觉，因此采用了后者。另外移除了跳跃的设定，一是因为编程困难，二是因为过度复杂。将玩家从表面离开的操作交给同样的WASD输入，沿着法线方向输入会推动神经元从表面离开。
+
+### 状态机
+
+用“抓握尝试”来管理玩家从表面脱离和自动吸附表面：
+
+```gdscript [player.gd] title="player.gd" showLineNumbers
+enum GripState { FREE, GRIP_VALID, GRIP_FAILED }
+...
+func _apply_movement(delta: float) -> void:
+	match _state: # 根据抓握状态切换移动逻辑
+		GripState.GRIP_VALID: 
+			_process_wall_movement(delta) # 切换到表面移动逻辑
+		GripState.GRIP_FAILED, GripState.FREE: 
+			_process_free_fall(delta) # 切换到自由落体逻辑
+```
+
+![movetest](/assets/psy-hunger/movetest.gif)
+
+<sub>移动测试</sub>
+
+## 视觉反馈
+
+一层黏稠的白色包裹物，一层带有高光的瞳孔，一层带有随机性的响应式触手。
+
+![visualtest](/assets/psy-hunger/visualtest.gif)
+
+<sub>视觉设计测试</sub>
+
+### 胞质蠕动
+
+在圆周域内动态生成顶点，并叠加 `sin()` 与 `cos()` 谐波函数。
+
+```gdscript [tentacle_visual.gd] title="tentacle_visual.gd"
+var primary_wave := sin(_time_accum * pulse_speed + angle * wave_frequency) * wave_amplitude
+var secondary_wave := cos(_time_accum * (pulse_speed * 0.7) + angle * (wave_frequency * 2.0)) * (wave_amplitude * 0.5)
+var current_radius := base_radius + primary_wave + secondary_wave
+```
+
+### 动态偏移
+
+瞳孔将基于当前速度向量产生对应偏移。
+
+当处于中心位置的瞳孔向边缘位移（即追踪运动方向）时，高光点将沿着相同方向产生基于预设系数的额外偏移。
+
+### 待机状态
+
+当监测到控制输入处于静息状态达到预定阈值后，瞳孔会产生一些随机位移，模拟通常银河城游戏中都会有的主角四处张望状态。
+
+```gdscript [player.gd] title="player.gd" showLineNumbers
+# Evaluate idle state based on user input
+if _input_dir != Vector2.ZERO:
+  _time_since_last_input = 0.0
+  _is_idle = false
+else:
+  _time_since_last_input += delta
+  if _time_since_last_input > idle_wait_time:
+    _is_idle = true
+```
+
+### 生成式触手
+
+1. 探测域被划分为四个标准的90度象限。算法确保每个象限内分配等量的触手实体，而各触手在所属象限内的具体生成角度则作受控的随机化处理。
+
+2. 触手在接触物理碰撞体表面后，将锁定该接触点的全局坐标。伴随主体位移的产生，触手将发生相应的几何拉伸。
+
+3. 当触手形变长度超过设定的物理极限阈值（目前设定为80%）时，系统向其贝塞尔曲线生成器注入高频正弦波形，以模拟高张力状态下的物理震颤。
+
+4. 触手拉伸率超出绝对物理极限后将被强制断开连接。这可以模仿出爬行效果而不需要真正编写动力学复杂的四足/多足移动逻辑。

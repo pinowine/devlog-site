@@ -95,3 +95,25 @@
     background-color: #475569; /* slate-600 */
   }
 }
+
+/* 修复由于 Tailwind 的 preflight 导致 Starlight 默认的列表样式丢失问题 */
+.sl-markdown-content ul:not(.not-content *) {
+  list-style-type: disc;
+  padding-inline-start: 1.5em;
+  margin-block: 1em;
+}
+
+.sl-markdown-content ol:not(.not-content *) {
+  list-style-type: decimal;
+  padding-inline-start: 1.5em;
+  margin-block: 1em;
+}
+
+.sl-markdown-content li:not(.not-content *) {
+  margin-top: 0.5em;
+}
+
+.sl-markdown-content li > ul:not(.not-content *),
+.sl-markdown-content li > ol:not(.not-content *) {
+  margin-block: 0.25em;
+}

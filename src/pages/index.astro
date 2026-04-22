@@ -4,7 +4,9 @@ import { CardGrid } from "@astrojs/starlight/components";
 
 import MainWrapper from "../layouts/MainWrapper.astro";
 import { getCollection } from "astro:content";
-const projects = await getCollection("projects");
+const projects = (await getCollection("projects")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
 
 import { ProjectCard } from "../components/ProjectCard";
 ---
